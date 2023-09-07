@@ -1,0 +1,6 @@
+../Core/Src/LCD_Lib.c:5:6:strub	1
+../Core/Src/LCD_Lib.c:14:6:sendBite	2
+../Core/Src/LCD_Lib.c:26:6:sendData	2
+../Core/Src/LCD_Lib.c:38:6:sendText	2
+../Core/Src/LCD_Lib.c:50:6:setDDRAM	1
+../Core/Src/LCD_Lib.c:55:6:init_8bit_interface	1

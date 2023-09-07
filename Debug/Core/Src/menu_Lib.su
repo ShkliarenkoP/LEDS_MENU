@@ -1,0 +1,4 @@
+../Core/Src/menu_Lib.c:5:6:writeText	16	static
+../Core/Src/menu_Lib.c:12:6:writeMainMenu	24	static
+../Core/Src/menu_Lib.c:21:6:writeSubLedMenu	24	static
+../Core/Src/menu_Lib.c:32:6:switchCursor	16	static
