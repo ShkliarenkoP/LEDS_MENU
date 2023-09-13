@@ -3,4 +3,6 @@
 ../Core/Src/LCD_Lib.c:26:6:sendData	2
 ../Core/Src/LCD_Lib.c:38:6:sendText	2
 ../Core/Src/LCD_Lib.c:50:6:setDDRAM	1
-../Core/Src/LCD_Lib.c:55:6:init_8bit_interface	1
+../Core/Src/LCD_Lib.c:55:6:clearDisplay	1
+../Core/Src/LCD_Lib.c:60:1:displayControl	1
+../Core/Src/LCD_Lib.c:66:6:init_8bit_interface	1

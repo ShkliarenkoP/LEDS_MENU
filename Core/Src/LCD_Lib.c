@@ -52,6 +52,17 @@ void setDDRAM(uint8_t DDRAM)
 	sendBite(SET_DDRAM | DDRAM);
 }
 
+void clearDisplay()
+{
+	sendBite(0x01);
+}
+
+displayControl(uint8_t display_seting)
+{
+	sendBite(0x08 | display_seting);
+//	sendBite(0b00001100);
+}
+
 void init_8bit_interface()
 {/*
 	HAL_Delay(50);

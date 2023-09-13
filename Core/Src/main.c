@@ -96,83 +96,162 @@ int main(void)
 
 //  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 1);//because pin is invert
   init_8bit_interface();
+  displayControl(CURSOR_BLINK_OFF & CURSOR_OFF);
   HAL_Delay(10);
 
 
-  struct MenuItem *change_item;
+ // struct MenuItem *change_item;
 
-  struct MenuItem MainMenu, led[4], subLed[2];
-  {
-	  MainMenu.name[10] = " ";
-	  MainMenu.text[10] = " ";
-	  MainMenu.ddram_name = NULL;
-	  MainMenu.ddram_text = NULL;
-	  MainMenu.writeFunction = writeMainMenu;
-	  MainMenu.subItem = led;
-	  MainMenu.parentalItem = NULL;
-	  {
-		  strcpy(led[0].name, " Ld1: ");
-		  led[0].text[10] = " ";
-		  led[0].ddram_name = 0x00;
-		  led[0].ddram_text = NULL;
-		  led[0].writeFunction = writeSubLedMenu;
-		  led[0].subItem = subLed;
-		  led[0].parentalItem = &MainMenu;
+  struct MenuItem MainMenu, led[4], subLed0[2],
+                                    subLed1[2],
+									subLed2[2],
+									subLed3[3];
 
-		  strcpy(led[1].name, " Ld2: ");
-		  led[1].text[10] = " ";
-		  led[1].ddram_name = 0x08;
-		  led[1].ddram_text = NULL;
-		  led[1].writeFunction = writeSubLedMenu;
-		  led[1].subItem = subLed;
-		  led[1].parentalItem = &MainMenu;
+  	  MainMenu.name[10] = " ";
+  	  MainMenu.text[10] = " ";
+  	  MainMenu.ddram_name = NULL;
+  	  MainMenu.ddram_text = NULL;
+  	  MainMenu.subItem = led;
+  	  MainMenu.parentalItem = NULL;
+  	  MainMenu.navigation_list = NULL;
+  	  MainMenu.writeFunction = writeMainMenu;
 
-		  strcpy(led[2].name, " Ld3: ");
-		  led[2].text[10] = " ";
-		  led[2].ddram_name = 0x40;
-		  led[2].ddram_text = NULL;
-		  led[2].writeFunction = writeSubLedMenu;
-		  led[2].subItem = subLed;
-		  led[2].parentalItem = &MainMenu;
+  		  strcpy(led[0].name, " Ld1: ");
+  		  led[0].text[10] = " ";
+  		  led[0].ddram_name = 0x00;
+  		  led[0].ddram_text = NULL;
+  		  led[0].state_item = CHOOSED_LED;
+  		  led[0].subItem = &subLed0[0];
+  		  led[0].parentalItem = NULL;
+  		  led[0].navigation_list = &led[1];
+  		  led[0].writeFunction = writeSubLedMenu;
 
-		  strcpy(led[3].name, " Ld4: ");
-		  led[3].text[10] = " ";
-		  led[3].ddram_name = 0x48;
-		  led[3].ddram_text = NULL;
-		  led[3].writeFunction = writeSubLedMenu;
-		  led[3].subItem = subLed;
-		  led[3].parentalItem = &MainMenu;
-
-		  {
-			  strcpy(subLed[0].name, " SET");
-			  strcpy(subLed[0].text, led[3].name);
-			  subLed[0].ddram_name = 0x40;
-			  subLed[0].ddram_text = 0x00;
-			  subLed[0].subItem = NULL;
-			  subLed[0].parentalItem = led;
-			  {
-
-			  }
-
-			  strcpy(subLed[1].name, " BACK");
-			  strcpy(subLed[1].text, led[3].name);
-			  subLed[1].ddram_name = 0x48;
-			  subLed[1].ddram_text = 0x00;
-			  subLed[1].subItem = NULL;
-			  subLed[1].parentalItem = led;
-			  {
-
-			  }
-		  }
-	  }
-  }
+  			  strcpy(subLed0[0].name, " SET");
+  			  strcpy(subLed0[0].text, led[0].name);
+  			  subLed0[0].ddram_name = 0x40;
+  			  subLed0[0].ddram_text = 0x00;
+  			  subLed0[0].state_item = SET_V;
+  			  subLed0[0].subItem = NULL;
+  			  subLed0[0].parentalItem = &MainMenu;
+  			  subLed0[0].navigation_list = &subLed0[1];
 
 
-  writeMainMenu(led);
+  			  strcpy(subLed0[1].name, " BACK");
+  			  strcpy(subLed0[1].text, led[0].name);
+  			  subLed0[1].ddram_name = 0x48;
+  			  subLed0[1].ddram_text = 0x00;
+  			  subLed0[1].state_item = BACK;
+  			  subLed0[1].subItem = NULL;
+  			  subLed0[1].parentalItem = &MainMenu;
+  			  subLed0[1].navigation_list = &subLed0[0];
 
-  struct MenuItem *cur = led;
 
-  uint8_t count = 0;
+
+
+  		  strcpy(led[1].name, " Ld2: ");
+  		  led[1].text[10] = " ";
+  		  led[1].ddram_name = 0x08;
+  		  led[1].ddram_text = NULL;
+  		  led[1].state_item = CHOOSED_LED;
+  		  led[1].subItem = &subLed1[0];
+  		  led[1].parentalItem = &MainMenu;
+  		  led[1].navigation_list = &led[2];
+  		  led[1].writeFunction = writeSubLedMenu;
+
+  			  strcpy(subLed1[0].name, " SET");
+  			  strcpy(subLed1[0].text, led[1].name);
+  			  subLed1[0].ddram_name = 0x40;
+  			  subLed1[0].ddram_text = 0x00;
+  			  subLed1[0].state_item = SET_V;
+  			  subLed1[0].subItem = NULL;
+  			  subLed1[0].parentalItem = &MainMenu;
+  			  subLed1[0].navigation_list = &subLed1[1];
+
+
+  			  strcpy(subLed1[1].name, " BACK");
+  			  strcpy(subLed1[1].text, led[1].name);
+  			  subLed1[1].ddram_name = 0x48;
+  			  subLed1[1].ddram_text = 0x00;
+  			  subLed1[1].state_item = BACK;
+  			  subLed1[1].subItem = NULL;
+  			  subLed1[1].parentalItem = &MainMenu;
+  			  subLed1[1].navigation_list = &subLed1[0];
+
+
+
+
+  		  strcpy(led[2].name, " Ld3: ");
+  		  led[2].text[10] = " ";
+  		  led[2].ddram_name = 0x40;
+  		  led[2].ddram_text = NULL;
+  		  led[2].state_item = CHOOSED_LED;
+  		  led[2].subItem = &subLed2[0];
+  		  led[2].parentalItem = &MainMenu;
+  		  led[2].navigation_list = &led[3];
+  		  led[2].writeFunction = writeSubLedMenu;
+
+  			  strcpy(subLed2[0].name, " SET");
+  			  strcpy(subLed2[0].text, led[2].name);
+  			  subLed2[0].ddram_name = 0x40;
+  			  subLed2[0].ddram_text = 0x00;
+  		      subLed2[0].state_item = SET_V;
+  			  subLed2[0].subItem = NULL;
+  			  subLed2[0].parentalItem = &MainMenu;
+  			  subLed2[0].navigation_list = &subLed3[1];
+
+
+  			  strcpy(subLed2[1].name, " BACK");
+  			  strcpy(subLed2[1].text, led[2].name);
+  			  subLed2[1].ddram_name = 0x48;
+  			  subLed2[1].ddram_text = 0x00;
+  			  subLed2[1].state_item = BACK;
+  			  subLed2[1].subItem = NULL;
+  			  subLed2[1].parentalItem = &MainMenu;
+  			  subLed2[1].navigation_list = &subLed3[0];
+
+
+
+
+  		  strcpy(led[3].name, " Ld4: ");
+  		  led[3].text[10] = " ";
+  		  led[3].ddram_name = 0x48;
+  		  led[3].ddram_text = NULL;
+  		  led[3].state_item = CHOOSED_LED;
+  		  led[3].subItem = &subLed3[0];
+  		  led[3].parentalItem = &MainMenu;
+  		  led[3].navigation_list = &led[0];
+  		  led[3].writeFunction = writeSubLedMenu;
+
+  			  strcpy(subLed3[0].name, " SET");
+  			  strcpy(subLed3[0].text, led[3].name);
+  			  subLed3[0].ddram_name = 0x40;
+  			  subLed3[0].ddram_text = 0x00;
+  			  subLed3[0].state_item = SET_V;
+  			  subLed3[0].subItem = NULL;
+  			  subLed3[0].parentalItem = &MainMenu;
+  			  subLed3[0].navigation_list = &subLed3[1];
+
+
+  			  strcpy(subLed3[1].name, " BACK");
+  			  strcpy(subLed3[1].text, led[3].name);
+  			  subLed3[1].ddram_name = 0x48;
+  			  subLed3[1].ddram_text = 0x00;
+  			  subLed3[1].state_item = BACK;
+  			  subLed3[1].subItem = NULL;
+  			  subLed3[1].parentalItem = &MainMenu;
+  			  subLed3[1].navigation_list = &subLed3[0];
+
+
+
+
+
+
+  MainMenu.writeFunction(led);
+
+  struct MenuItem *horizontal_lvl_curr = &led[0],
+		  	  	  *horizontal_lvl_prev = NULL;
+
+  setCursor(horizontal_lvl_curr);
 
   while (1)
   {
@@ -181,12 +260,39 @@ int main(void)
 	 case CHANGE:
 		 button = 0;
 
-		 switchCursor(led, (count % 4));
+		 horizontal_lvl_prev = horizontal_lvl_curr;
 
-		 count++;
+		 switchCursor(horizontal_lvl_prev, horizontal_lvl_prev->navigation_list);
+
+		 horizontal_lvl_curr = horizontal_lvl_prev->navigation_list;
+
 		 break;
 
 	 case SELECT:
+		 button = 0;
+
+		 switch(horizontal_lvl_curr->state_item)
+		 {
+		 case CHOOSED_LED:
+			 horizontal_lvl_curr = horizontal_lvl_curr->writeFunction(horizontal_lvl_curr->subItem);
+
+			 break;
+
+		 case SET_V:
+			 break;
+
+		 case BACK:
+			 horizontal_lvl_curr = backFunc(horizontal_lvl_curr->parentalItem);
+
+	//		 setCursor(horizontal_lvl_curr);
+			 break;
+		 }
+
+//		 horizontal_lvl_curr = horizontal_lvl_curr->writeFunction(horizontal_lvl_curr->subItem);
+
+/*		 horizontal_lvl_curr = horizontal_lvl_curr->subItem;
+		 writeSubLedMenu(horizontal_lvl_curr);
+*/
 		 break;
 	 }
 
@@ -263,6 +369,9 @@ static void MX_GPIO_Init(void)
                           |GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
@@ -286,11 +395,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PB3 PB4 PB5 */
   GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
@@ -299,6 +421,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
