@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include "LCD_Lib.h"
 #include "menu_Lib.h"
+#include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,6 +43,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
 extern uint8_t button = 0;
@@ -49,6 +53,8 @@ extern uint8_t button = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -86,6 +92,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 
@@ -95,6 +103,12 @@ int main(void)
 //  HAL_GPIO_WritePin(MANAGE_PORT, RS, 1);
 
 //  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 1);//because pin is invert
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+
   init_8bit_interface();
   displayControl(CURSOR_BLINK_OFF & CURSOR_OFF);
   HAL_Delay(10);
@@ -102,157 +116,264 @@ int main(void)
 
  // struct MenuItem *change_item;
 
-  struct MenuItem MainMenu, led[4], subLed0[2],
-                                    subLed1[2],
-									subLed2[2],
-									subLed3[3];
+  struct MenuItem MainMenu, led[4], subLed0[4],
+                                    subLed1[4],
+									subLed2[4],
+									subLed3[4];
 
-  	  MainMenu.name[10] = " ";
-  	  MainMenu.text[10] = " ";
-  	  MainMenu.ddram_name = NULL;
-  	  MainMenu.ddram_text = NULL;
+
+  	  MainMenu.name[10] = 0;
+  	  MainMenu.text[10] = 0;
+  	  MainMenu.ddram_name = 0;
+  	  MainMenu.ddram_text = 0;
   	  MainMenu.subItem = led;
   	  MainMenu.parentalItem = NULL;
   	  MainMenu.navigation_list = NULL;
-  	  MainMenu.writeFunction = writeMainMenu;
+  	  MainMenu.itemFunction = writeMainMenu;
 
-  		  strcpy(led[0].name, " Ld1: ");
-  		  led[0].text[10] = " ";
+
+  	  	  led[0].PWM_lvl = 0;
+  		  sprintf(led[0].name, " Ld1:");
+  		  sprintf(led[0].text, " Ld1:%d", led[0].PWM_lvl);
   		  led[0].ddram_name = 0x00;
-  		  led[0].ddram_text = NULL;
+  		  led[0].ddram_text = 0;
   		  led[0].state_item = CHOOSED_LED;
   		  led[0].subItem = &subLed0[0];
   		  led[0].parentalItem = NULL;
   		  led[0].navigation_list = &led[1];
-  		  led[0].writeFunction = writeSubLedMenu;
+  		  led[0].itemFunction = writeSubLedMenu;
+  		  led[0].PWM_Reg = &(TIM2->CCR1);
 
-  			  strcpy(subLed0[0].name, " SET");
-  			  strcpy(subLed0[0].text, led[0].name);
-  			  subLed0[0].ddram_name = 0x40;
-  			  subLed0[0].ddram_text = 0x00;
-  			  subLed0[0].state_item = SET_V;
-  			  subLed0[0].subItem = NULL;
-  			  subLed0[0].parentalItem = &MainMenu;
-  			  subLed0[0].navigation_list = &subLed0[1];
+  		  	  strcpy(subLed0[0].name, (const char*)" -");
+  		      sprintf(subLed0[0].text, "%s", led[0].name);
+			  subLed0[0].ddram_name = 0x44;
+			  subLed0[0].ddram_text = 0x00;
+			  subLed0[0].state_item = MINUS;
+			  subLed0[0].PWM_lvl = 0;
+			  subLed0[0].subItem = &led[0];
+			  subLed0[0].parentalItem = &MainMenu;
+			  subLed0[0].navigation_list = &subLed0[1];
+			  subLed0[0].itemFunction = reWrite;
+
+			  strcpy(subLed0[1].name, (const char*)" +");
+			  sprintf(subLed0[1].text, "%s", led[0].name);
+			  subLed0[1].ddram_name = 0x48;
+			  subLed0[1].ddram_text = 0x00;
+			  subLed0[1].state_item = PLUS;
+			  subLed0[1].PWM_lvl = 0;
+			  subLed0[1].subItem = &led[0];
+			  subLed0[1].parentalItem = &MainMenu;
+			  subLed0[1].navigation_list = &subLed0[2];
+			  subLed0[1].itemFunction = reWrite;
+
+  			  strcpy(subLed0[2].name, (const char*)" SET");
+  			  strcpy(subLed0[2].text, led[0].name);
+  			  subLed0[2].ddram_name = 0x0B;
+  			  subLed0[2].ddram_text = 0x00;
+  			  subLed0[2].state_item = SET_V;
+  			  subLed0[2].PWM_lvl = 0;
+  			  subLed0[2].subItem = &led[0];
+  			  subLed0[2].parentalItem = &MainMenu;
+  			  subLed0[2].navigation_list = &subLed0[3];
+
+  			  strcpy(subLed0[3].name, (const char*)" BACK");
+  			  strcpy(subLed0[3].text, led[0].name);
+  			  subLed0[3].ddram_name = 0x4B;
+  			  subLed0[3].ddram_text = 0x00;
+  			  subLed0[3].state_item = BACK;
+  			  subLed0[3].PWM_lvl = 0;
+  			  subLed0[3].subItem = &led[0];
+  			  subLed0[3].parentalItem = &MainMenu;
+  			  subLed0[3].navigation_list = &subLed0[0];
+  			  subLed0[3].itemFunction = backFunc;
 
 
-  			  strcpy(subLed0[1].name, " BACK");
-  			  strcpy(subLed0[1].text, led[0].name);
-  			  subLed0[1].ddram_name = 0x48;
-  			  subLed0[1].ddram_text = 0x00;
-  			  subLed0[1].state_item = BACK;
-  			  subLed0[1].subItem = NULL;
-  			  subLed0[1].parentalItem = &MainMenu;
-  			  subLed0[1].navigation_list = &subLed0[0];
-
-
-
-
-  		  strcpy(led[1].name, " Ld2: ");
-  		  led[1].text[10] = " ";
+  		  led[1].PWM_lvl = 0;
+  		  sprintf(led[1].name, " Ld2:");
+  		  sprintf(led[1].text, " Ld2:%d", led[1].PWM_lvl);
   		  led[1].ddram_name = 0x08;
-  		  led[1].ddram_text = NULL;
+  		  led[1].ddram_text = 0;
   		  led[1].state_item = CHOOSED_LED;
   		  led[1].subItem = &subLed1[0];
   		  led[1].parentalItem = &MainMenu;
   		  led[1].navigation_list = &led[2];
-  		  led[1].writeFunction = writeSubLedMenu;
+  		  led[1].itemFunction = writeSubLedMenu;
+  		  led[1].PWM_Reg = &(TIM3->CCR3);
 
-  			  strcpy(subLed1[0].name, " SET");
-  			  strcpy(subLed1[0].text, led[1].name);
-  			  subLed1[0].ddram_name = 0x40;
-  			  subLed1[0].ddram_text = 0x00;
-  			  subLed1[0].state_item = SET_V;
-  			  subLed1[0].subItem = NULL;
-  			  subLed1[0].parentalItem = &MainMenu;
-  			  subLed1[0].navigation_list = &subLed1[1];
+  		  	  strcpy(subLed1[0].name, (const char*)" -");
+  		  	  sprintf(subLed1[0].text, "%s", led[1].name);
+			  subLed1[0].ddram_name = 0x44;
+			  subLed1[0].ddram_text = 0x00;
+			  subLed1[0].state_item = MINUS;
+			  subLed1[0].PWM_lvl = 0;
+			  subLed1[0].subItem = &led[1];
+			  subLed1[0].parentalItem = &MainMenu;
+			  subLed1[0].navigation_list = &subLed1[1];
+			  subLed1[0].itemFunction = reWrite;
+
+			  strcpy(subLed1[1].name, (const char*)" +");
+			  sprintf(subLed1[1].text, "%s", led[1].name);
+			  subLed1[1].ddram_name = 0x48;
+			  subLed1[1].ddram_text = 0x00;
+			  subLed1[1].state_item = PLUS;
+			  subLed1[1].PWM_lvl = 0;
+			  subLed1[1].subItem = &led[1];
+			  subLed1[1].parentalItem = &MainMenu;
+			  subLed1[1].navigation_list = &subLed1[2];
+			  subLed1[1].itemFunction = reWrite;
+
+			  strcpy(subLed1[2].name, (const char*)" SET");
+			  strcpy(subLed1[2].text, led[1].name);
+			  subLed1[2].ddram_name = 0x0B;
+			  subLed1[2].ddram_text = 0x00;
+			  subLed1[2].state_item = SET_V;
+			  subLed1[2].PWM_lvl = 0;
+			  subLed1[2].subItem = &led[1];
+			  subLed1[2].parentalItem = &MainMenu;
+			  subLed1[2].navigation_list = &subLed1[3];
+
+			  strcpy(subLed1[3].name, (const char*)" BACK");
+			  strcpy(subLed1[3].text, led[1].name);
+			  subLed1[3].ddram_name = 0x4B;
+			  subLed1[3].ddram_text = 0x00;
+			  subLed1[3].state_item = BACK;
+			  subLed1[3].PWM_lvl = 0;
+			  subLed1[3].subItem = &led[1];
+			  subLed1[3].parentalItem = &MainMenu;
+			  subLed1[3].navigation_list = &subLed1[0];
+			  subLed1[3].itemFunction = backFunc;
 
 
-  			  strcpy(subLed1[1].name, " BACK");
-  			  strcpy(subLed1[1].text, led[1].name);
-  			  subLed1[1].ddram_name = 0x48;
-  			  subLed1[1].ddram_text = 0x00;
-  			  subLed1[1].state_item = BACK;
-  			  subLed1[1].subItem = NULL;
-  			  subLed1[1].parentalItem = &MainMenu;
-  			  subLed1[1].navigation_list = &subLed1[0];
-
-
-
-
-  		  strcpy(led[2].name, " Ld3: ");
-  		  led[2].text[10] = " ";
+		  led[2].PWM_lvl = 0;
+    	  sprintf(led[2].name, " Ld3:");
+		  sprintf(led[2].text, " Ld3:%d", led[2].PWM_lvl);
   		  led[2].ddram_name = 0x40;
-  		  led[2].ddram_text = NULL;
+  		  led[2].ddram_text = 0;
   		  led[2].state_item = CHOOSED_LED;
   		  led[2].subItem = &subLed2[0];
   		  led[2].parentalItem = &MainMenu;
   		  led[2].navigation_list = &led[3];
-  		  led[2].writeFunction = writeSubLedMenu;
+  		  led[2].itemFunction = writeSubLedMenu;
+  		  led[2].PWM_Reg = &(TIM3->CCR4);
 
-  			  strcpy(subLed2[0].name, " SET");
-  			  strcpy(subLed2[0].text, led[2].name);
-  			  subLed2[0].ddram_name = 0x40;
-  			  subLed2[0].ddram_text = 0x00;
-  		      subLed2[0].state_item = SET_V;
-  			  subLed2[0].subItem = NULL;
-  			  subLed2[0].parentalItem = &MainMenu;
-  			  subLed2[0].navigation_list = &subLed3[1];
+  		  	  strcpy(subLed2[0].name, (const char*)" -");
+  		  	  sprintf(subLed2[0].text, "%s", led[2].name);
+			  subLed2[0].ddram_name = 0x44;
+			  subLed2[0].ddram_text = 0x00;
+			  subLed2[0].state_item = MINUS;
+			  subLed2[0].PWM_lvl = 0;
+			  subLed2[0].subItem = &led[2];
+			  subLed2[0].parentalItem = &MainMenu;
+			  subLed2[0].navigation_list = &subLed2[1];
+			  subLed2[0].itemFunction = reWrite;
+
+			  strcpy(subLed2[1].name, (const char*)" +");
+			  sprintf(subLed2[1].text, "%s", led[2].name);
+			  subLed2[1].ddram_name = 0x48;
+			  subLed2[1].ddram_text = 0x00;
+			  subLed2[1].state_item = PLUS;
+			  subLed2[1].PWM_lvl = 0;
+			  subLed2[1].subItem = &led[2];
+			  subLed2[1].parentalItem = &MainMenu;
+			  subLed2[1].navigation_list = &subLed2[2];
+			  subLed2[1].itemFunction = reWrite;
+
+			  strcpy(subLed2[2].name, (const char*)" SET");
+			  strcpy(subLed2[2].text, led[2].name);
+			  subLed2[2].ddram_name = 0x0B;
+			  subLed2[2].ddram_text = 0x00;
+			  subLed2[2].state_item = SET_V;
+			  subLed2[2].PWM_lvl = 0;
+			  subLed2[2].subItem = &led[2];
+			  subLed2[2].parentalItem = &MainMenu;
+			  subLed2[2].navigation_list = &subLed2[3];
+
+			  strcpy(subLed2[3].name, (const char*)" BACK");
+			  strcpy(subLed2[3].text, led[2].name);
+			  subLed2[3].ddram_name = 0x4B;
+			  subLed2[3].ddram_text = 0x00;
+			  subLed2[3].state_item = BACK;
+			  subLed2[3].PWM_lvl = 0;
+			  subLed2[3].subItem = &led[2];
+			  subLed2[3].parentalItem = &MainMenu;
+			  subLed2[3].navigation_list = &subLed2[0];
+			  subLed2[3].itemFunction = backFunc;
 
 
-  			  strcpy(subLed2[1].name, " BACK");
-  			  strcpy(subLed2[1].text, led[2].name);
-  			  subLed2[1].ddram_name = 0x48;
-  			  subLed2[1].ddram_text = 0x00;
-  			  subLed2[1].state_item = BACK;
-  			  subLed2[1].subItem = NULL;
-  			  subLed2[1].parentalItem = &MainMenu;
-  			  subLed2[1].navigation_list = &subLed3[0];
-
-
-
-
-  		  strcpy(led[3].name, " Ld4: ");
-  		  led[3].text[10] = " ";
+		  led[3].PWM_lvl = 0;
+		  sprintf(led[3].name, " Ld4:");
+		  sprintf(led[3].text, " Ld4:%d", led[3].PWM_lvl);
   		  led[3].ddram_name = 0x48;
-  		  led[3].ddram_text = NULL;
+  		  led[3].ddram_text = 0;
   		  led[3].state_item = CHOOSED_LED;
   		  led[3].subItem = &subLed3[0];
   		  led[3].parentalItem = &MainMenu;
   		  led[3].navigation_list = &led[0];
-  		  led[3].writeFunction = writeSubLedMenu;
+  		  led[3].itemFunction = writeSubLedMenu;
+  		  led[3].PWM_Reg = &(TIM3->CCR1);
 
-  			  strcpy(subLed3[0].name, " SET");
-  			  strcpy(subLed3[0].text, led[3].name);
-  			  subLed3[0].ddram_name = 0x40;
-  			  subLed3[0].ddram_text = 0x00;
-  			  subLed3[0].state_item = SET_V;
-  			  subLed3[0].subItem = NULL;
-  			  subLed3[0].parentalItem = &MainMenu;
-  			  subLed3[0].navigation_list = &subLed3[1];
+  		  	  strcpy(subLed3[0].name, (const char*)" -");
+			  sprintf(subLed3[0].text, "%s", led[3].name);
+			  subLed3[0].ddram_name = 0x44;
+			  subLed3[0].ddram_text = 0x00;
+			  subLed3[0].state_item = MINUS;
+			  subLed3[0].PWM_lvl = 0;
+			  subLed3[0].subItem = &led[3];
+			  subLed3[0].parentalItem = &MainMenu;
+			  subLed3[0].navigation_list = &subLed3[1];
+			  subLed3[0].itemFunction = reWrite;
+
+			  strcpy(subLed3[1].name, (const char*)" +");
+			  sprintf(subLed3[1].text, "%s", led[3].name);
+			  subLed3[1].ddram_name = 0x48;
+			  subLed3[1].ddram_text = 0x00;
+			  subLed3[1].state_item = PLUS;
+			  subLed3[1].PWM_lvl = 0;
+			  subLed3[1].subItem = &led[3];
+			  subLed3[1].parentalItem = &MainMenu;
+			  subLed3[1].navigation_list = &subLed3[2];
+			  subLed3[1].itemFunction = reWrite;
+
+			  strcpy(subLed3[2].name, (const char*)" SET");
+			  strcpy(subLed3[2].text, led[3].name);
+			  subLed3[2].ddram_name = 0x0B;
+			  subLed3[2].ddram_text = 0x00;
+			  subLed3[2].state_item = SET_V;
+			  subLed3[2].PWM_lvl = 0;
+			  subLed3[2].subItem = &led[3];
+			  subLed3[2].parentalItem = &MainMenu;
+			  subLed3[2].navigation_list = &subLed3[3];
+
+			  strcpy(subLed3[3].name, (const char*)" BACK");
+			  strcpy(subLed3[3].text, led[3].name);
+			  subLed3[3].ddram_name = 0x4B;
+			  subLed3[3].ddram_text = 0x00;
+			  subLed3[3].state_item = BACK;
+			  subLed3[3].PWM_lvl = 0;
+			  subLed3[3].subItem = &led[3];
+			  subLed3[3].parentalItem = &MainMenu;
+			  subLed3[3].navigation_list = &subLed3[0];
+			  subLed3[3].itemFunction = backFunc;
 
 
-  			  strcpy(subLed3[1].name, " BACK");
-  			  strcpy(subLed3[1].text, led[3].name);
-  			  subLed3[1].ddram_name = 0x48;
-  			  subLed3[1].ddram_text = 0x00;
-  			  subLed3[1].state_item = BACK;
-  			  subLed3[1].subItem = NULL;
-  			  subLed3[1].parentalItem = &MainMenu;
-  			  subLed3[1].navigation_list = &subLed3[0];
 
 
 
 
+  MainMenu.itemFunction(led, NULL);
 
+  const struct MenuItem *current_item = &led[0],
+		  	  	        *previous_item = NULL;
 
-  MainMenu.writeFunction(led);
+  uint8_t PWM = 70;
 
-  struct MenuItem *horizontal_lvl_curr = &led[0],
-		  	  	  *horizontal_lvl_prev = NULL;
-
-  setCursor(horizontal_lvl_curr);
-
+  setCursor(current_item);
+/*
+  *(led[0].PWM_Reg) = 100;
+  TIM3->CCR1 = 3999;
+  TIM3->CCR3 = 0;
+  TIM3->CCR4 = 100;
+*/
   while (1)
   {
 	 switch(button)
@@ -260,40 +381,94 @@ int main(void)
 	 case CHANGE:
 		 button = 0;
 
-		 horizontal_lvl_prev = horizontal_lvl_curr;
+		 previous_item = current_item;
 
-		 switchCursor(horizontal_lvl_prev, horizontal_lvl_prev->navigation_list);
+		 switchCursor(previous_item, previous_item->navigation_list);
 
-		 horizontal_lvl_curr = horizontal_lvl_prev->navigation_list;
+		 current_item = previous_item->navigation_list;
 
 		 break;
 
 	 case SELECT:
 		 button = 0;
 
-		 switch(horizontal_lvl_curr->state_item)
+		 switch(current_item->state_item)
 		 {
 		 case CHOOSED_LED:
-			 horizontal_lvl_curr = horizontal_lvl_curr->writeFunction(horizontal_lvl_curr->subItem);
+
+			 PWM = current_item->PWM_lvl;
+
+			 current_item = current_item->itemFunction(current_item->subItem, NULL);
+	//		 PWM = current_item->PWM_lvl;
 
 			 break;
 
 		 case SET_V:
+
+			 current_item->subItem->PWM_lvl = PWM;
+
+			 *(current_item->subItem->PWM_Reg) = ((4000 * current_item->subItem->PWM_lvl) / 100);
+//			 current_item->subItem->PWM_Reg = ((4000 * current_item->subItem->PWM_lvl) / 100);
+
+			 sprintf(current_item->subItem->text, "%s%d", current_item->subItem->name, current_item->subItem->PWM_lvl);
+
+//			 current_item = current_item->itemFunction(current_item->parentalItem, NULL);
+			 current_item = backFunc(current_item->parentalItem);
+
+
 			 break;
 
 		 case BACK:
-			 horizontal_lvl_curr = backFunc(horizontal_lvl_curr->parentalItem);
 
-	//		 setCursor(horizontal_lvl_curr);
+			 current_item = current_item->itemFunction(current_item->parentalItem, NULL);
+//			 current_item = backFunc(current_item->parentalItem);
+
 			 break;
+
+		 case MINUS:
+
+			 if(PWM == 100)
+			 {
+				 clearChar(0x07);
+			 }
+
+			 PWM -= 5;
+
+			 if(PWM > 100)
+			 {
+				 PWM = 0;
+			 }
+
+			 reWrite(current_item, &PWM);
+
+			 if(PWM < 10)
+			 {
+				 clearChar(0x06);
+			 }
+
+			 break;
+
+		 case PLUS:
+
+			 if(PWM == 0)
+			 {
+				 clearChar(0x06);
+			 }
+
+			 PWM += 5;
+
+			 if(PWM > 100)
+			 {
+				 PWM = 100;
+			 }
+
+			 reWrite(current_item, &PWM);
+
+			 break;
+
 		 }
 
-//		 horizontal_lvl_curr = horizontal_lvl_curr->writeFunction(horizontal_lvl_curr->subItem);
 
-/*		 horizontal_lvl_curr = horizontal_lvl_curr->subItem;
-		 writeSubLedMenu(horizontal_lvl_curr);
-*/
-		 break;
 	 }
 
     /* USER CODE END WHILE */
@@ -347,6 +522,112 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 20;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4000;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 20;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 4000;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
 }
 
 /**

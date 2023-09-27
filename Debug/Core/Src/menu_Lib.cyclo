@@ -1,7 +1,9 @@
-../Core/Src/menu_Lib.c:7:6:writeText	1
-../Core/Src/menu_Lib.c:16:18:writeMainMenu	2
-../Core/Src/menu_Lib.c:30:18:writeSubLedMenu	2
-../Core/Src/menu_Lib.c:47:6:switchCursor	1
-../Core/Src/menu_Lib.c:54:6:clearCursor	1
-../Core/Src/menu_Lib.c:61:6:setCursor	1
-../Core/Src/menu_Lib.c:71:18:backFunc	1
+../Core/Src/menu_Lib.c:8:6:writeText	1
+../Core/Src/menu_Lib.c:17:24:writeMainMenu	2
+../Core/Src/menu_Lib.c:31:24:writeSubLedMenu	2
+../Core/Src/menu_Lib.c:46:6:reWrite	1
+../Core/Src/menu_Lib.c:54:6:switchCursor	1
+../Core/Src/menu_Lib.c:61:6:clearCursor	1
+../Core/Src/menu_Lib.c:68:6:setCursor	1
+../Core/Src/menu_Lib.c:76:6:clearChar	1
+../Core/Src/menu_Lib.c:85:24:backFunc	1
